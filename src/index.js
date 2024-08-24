@@ -4,9 +4,9 @@
 
  const startButton = document.querySelector(".js-start-button");
  // TODO: Add the missing query selectors:
- const statusSpan; // Use querySelector() to get the status element
- const heading; // Use querySelector() to get the heading element
- const padContainer; // Use querySelector() to get the heading element
+ const statusSpan = document.querySelector(".js-status") // Use querySelector() to get the status element
+ const heading = document.querySelector(".js-heading")// Use querySelector() to get the heading element
+ const padContainer = document.querySelector(".js-pad-container"); // Use querySelector() to get the heading element
 
 /**
  * VARIABLES
@@ -37,7 +37,21 @@ let roundCount = 0; // track the number of rounds that have been played so far
     selector: document.querySelector(".js-pad-red"),
     sound: new Audio("../assets/simon-says-sound-1.mp3"),
   },
-  // TODO: Add the objects for the green, blue, and yellow pads. Use object for the red pad above as an example.
+  {
+    color: "green",
+    selector: document.querySelector(".js-pad-green"),
+    sound: new Audio("../assets/simon-says-sound-2.mp3"),
+  },
+  {
+    color: "blue",
+    selector: document.querySelector(".js-pad-blue"),
+    sound: new Audio("../assets/simon-says-sound-3.mp3"),
+  },
+  {
+    color: "yellow",
+    selector: document.querySelector(".js-pad-yellow"),
+    sound: new Audio("../assets/simon-says-sound-4.mp3"),
+  }
 ];
 
 /**
@@ -45,7 +59,7 @@ let roundCount = 0; // track the number of rounds that have been played so far
  */
 
 padContainer.addEventListener("click", padHandler);
-// TODO: Add an event listener `startButtonHandler()` to startButton.
+startButton.addEventListener("click", startButtonHandler);
 
 /**
  * EVENT HANDLERS
@@ -67,6 +81,11 @@ padContainer.addEventListener("click", padHandler);
  */
 function startButtonHandler() {
   // TODO: Write your code here.
+  maxRoundCount = setLevel(1)
+  roundCount = 1
+  startButton.classList.add("hidden")
+  statusSpan.classList.remove("hidden");
+  playComputerTurn();
 
   return { startButton, statusSpan };
 }
@@ -93,6 +112,9 @@ function padHandler(event) {
   if (!color) return;
 
   // TODO: Write your code here.
+  const section = pads.find((element) => element.color == color);
+  section.sound.play();
+  checkPress(color);
   return color;
 }
 
@@ -122,7 +144,17 @@ function padHandler(event) {
  *
  */
 function setLevel(level = 1) {
-  // TODO: Write your code here.
+  if(level === 1) {
+    return 8;
+  } else if(level === 2) {
+    return 14;
+  } else if(level === 3) {
+    return 20;
+  } else if(level === 4) {
+    return 31;
+  } else {
+    return "Level needs to be 1,2,3 or 4" 
+  }
 }
 
 /**
@@ -141,9 +173,9 @@ function setLevel(level = 1) {
  * getRandomItem([1, 2, 3, 4]) //> returns 1
  */
 function getRandomItem(collection) {
-  // if (collection.length === 0) return null;
-  // const randomIndex = Math.floor(Math.random() * collection.length);
-  // return collection[randomIndex];
+  if (collection.length === 0) return null;
+  const randomIndex = Math.floor(Math.random() * collection.length);
+  return collection[randomIndex];
 }
 
 /**
@@ -151,6 +183,8 @@ function getRandomItem(collection) {
  */
 function setText(element, text) {
   // TODO: Write your code here.
+  element.innerText = "";
+  element.innerText = text;
   return element;
 }
 
@@ -167,8 +201,14 @@ function setText(element, text) {
  * 4. After 500ms, remove the `"activated"` class from the pad
  */
 
+
 function activatePad(color) {
   // TODO: Write your code here.
+  const section = pads.find(pad => pad.color === color)
+  const chosenSection = section.selector;
+  chosenSection.classList.add("activated") 
+  section.sound.play()
+  setTimeout(() => chosenSection.classList.remove("activated"), 500);
 }
 
 /**
@@ -187,6 +227,9 @@ function activatePad(color) {
 
 function activatePads(sequence) {
   // TODO: Write your code here.
+  sequence.forEach(function(color, index) {
+   setTimeout(() => activatePad(color), index * 750);
+});
 }
 
 /**
@@ -214,8 +257,18 @@ function activatePads(sequence) {
  */
  function playComputerTurn() {
   // TODO: Write your code here.
+  const colorArray = ["red", "green", "blue", "yellow"]
+  padContainer.classList.add("unclickable");
+  const headingTxt = `Round ${roundCount} of ${maxRoundCount}`;
 
-  setTimeout(() => playHumanTurn(roundCount), roundCount * 600 + 1000); // 5
+  setText(statusSpan, "The computer's turn...")
+  setText(heading, headingTxt);
+
+  const color = getRandomItem(colorArray)
+  computerSequence.push(color);
+  activatePads(computerSequence)
+
+  setTimeout(() => playHumanTurn(roundCount), roundCount * 750 + 1000); // 5
 }
 
 /**
@@ -227,6 +280,9 @@ function activatePads(sequence) {
  */
 function playHumanTurn() {
   // TODO: Write your code here.
+  padContainer.classList.remove("unclickable");
+  const spanTxt =  `Remaining presses left: ${computerSequence.length - playerSequence.length}`;
+  setText(statusSpan, spanTxt)
 }
 
 /**
@@ -253,6 +309,21 @@ function playHumanTurn() {
  */
 function checkPress(color) {
   // TODO: Write your code here.
+  playerSequence.push(color);
+
+  const pressesLeft = computerSequence.length - playerSequence.length;
+
+  const element = playerSequence.length - 1;
+
+    if ((pressesLeft != 0) && (computerSequence[element] === playerSequence[element])){
+      const spanText = `Player's turn: ${pressesLeft} presses remaining`;
+      setText(statusSpan,spanText)
+    } else if ((pressesLeft === 0 ) && (computerSequence.toString() === playerSequence.toString())) {
+      checkRound();
+    } else {
+      setText(statusSpan,"Gamer is Fin 😋");
+      setTimeout(() => resetGame(), 2000);
+    }
 }
 
 /**
@@ -272,6 +343,15 @@ function checkPress(color) {
 
 function checkRound() {
   // TODO: Write your code here.
+  if (roundCount === maxRoundCount){
+    setText(statusSpan,"Congratulations! You're a winner!")
+    setTimeout(() => resetGame(), 2000);
+  } else {
+    roundCount = roundCount + 1;
+    playerSequence = [];
+    setText(statusSpan,"Nice! Keep going!");
+    setTimeout(() => playComputerTurn(), 2000);
+  }
 }
 
 /**
@@ -285,13 +365,16 @@ function checkRound() {
  */
 function resetGame(text) {
   // TODO: Write your code here.
+  computerSequence = [];
+  playerSequence = [];
+  roundCount = 0;
 
   // Uncomment the code below:
   // alert(text);
-  // setText(heading, "Simon Says");
-  // startButton.classList.remove("hidden");
-  // statusSpan.classList.add("hidden");
-  // padContainer.classList.add("unclickable");
+  setText(heading, "Simon Says");
+  startButton.classList.remove("hidden");
+  statusSpan.classList.add("hidden");
+  padContainer.classList.add("unclickable");
 }
 
 /**
