@@ -382,7 +382,7 @@ function resetGame(text) {
 
   // Uncomment the code below:
   // alert(text);
-  setText(heading, "Bodhi Says, fart nuggets");
+  setText(heading, "Bodhi Says, stinky farts😫");
   startButton.classList.remove("hidden");
   statusSpan.classList.add("hidden");
   padContainer.classList.add("unclickable");
