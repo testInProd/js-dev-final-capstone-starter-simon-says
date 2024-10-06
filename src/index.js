@@ -321,7 +321,7 @@ function checkPress(color) {
     } else if ((pressesLeft === 0 ) && (computerSequence.toString() === playerSequence.toString())) {
       checkRound();
     } else {
-      setText(statusSpan,"Gamer is Fin 😋");
+      setText(statusSpan,"🤑 Bodhi Rules 😁 😋");
       setTimeout(() => resetGame(), 2000);
     }
 }
